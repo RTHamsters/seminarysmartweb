@@ -5,6 +5,7 @@ function App() {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [masterDoctrine, setMasterDoctrine] = useState<string>('');
 
+  // マスター教義一覧
   const masterDoctrines = [
     'D&C8:2-3 聖霊によって、わたしはあなたの思いとあなたの心に告げよう。',
     'D&C49:15-17 結婚は…神によって定められている…。',
@@ -26,7 +27,6 @@ function App() {
     const diffMs = today.getTime() - startDate.getTime();
 
     if (diffMs < 0) {
-      // 開始日より前は最初の教義
       setMasterDoctrine(masterDoctrines[0]);
       return;
     }
@@ -54,7 +54,7 @@ function App() {
         setNotificationMessage('もうすぐセミナリーが始まります。');
         setShowNotification(true);
       } else if (hour >= 20 && hour < 21) {
-        setNotificationMessage('もうすぐセミナリーが始まります。');
+        setNotificationMessage('セミナリーに参加できます！');
         setShowNotification(true);
       } else {
         setShowNotification(false);
@@ -73,6 +73,39 @@ function App() {
     else {
       setShowNotification(false);
     }
+  };
+
+  // お知らせフォームの state
+  const [noticeSender, setNoticeSender] = useState('');
+  const [noticeTitle, setNoticeTitle] = useState('');
+  const [noticeContent, setNoticeContent] = useState('');
+
+  // お知らせ一覧（最初は仮データ）
+  const [notices, setNotices] = useState<{ noticeId: string, sender: string, title: string, content: string }[]>([
+    { noticeId: '1', sender: '先生A', title: '明日は休みです', content: '明日5月7日の授業は休講です。' },
+    { noticeId: '2', sender: '生徒B', title: '早退します', content: '明日3限終了後に早退します。' }
+  ]);
+
+  // お知らせフォームの送信処理
+  const handleNoticeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const newNotice = {
+      noticeId: Date.now().toString(),
+      sender: noticeSender,
+      title: noticeTitle,
+      content: noticeContent
+    };
+
+    // 新しいお知らせを notices に追加（新しいものを上に）
+    setNotices([newNotice, ...notices]);
+
+    // 入力欄クリア
+    setNoticeSender('');
+    setNoticeTitle('');
+    setNoticeContent('');
+
+    alert('お知らせを送信しました！');
   };
 
   useEffect(() => {
@@ -100,8 +133,7 @@ function App() {
         <div style={{ border: '2px solid blue', padding: '20px', margin: '20px auto', width: '320px' }}>
           <p style={{ fontSize: '18px', whiteSpace: 'pre-line' }}>{notificationMessage}</p>
 
-          {/* 火水木の通知ならボタン表示 */}
-          {notificationMessage.includes('もうすぐセミナリーが始まります') && (
+          {notificationMessage.includes('セミナリー') && (
             <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '10px' }}>
               <button
                 style={{ padding: '10px 20px' }}
@@ -119,6 +151,56 @@ function App() {
           )}
         </div>
       )}
+
+      {/* --- お知らせ投稿フォーム --- */}
+      <hr style={{ margin: '40px 0' }} />
+      <h2>お知らせ投稿</h2>
+      <form onSubmit={handleNoticeSubmit} style={{ maxWidth: '400px', margin: '0 auto', textAlign: 'left' }}>
+        <div style={{ marginBottom: '10px' }}>
+          <label>送信者:</label><br />
+          <input
+            type="text"
+            value={noticeSender}
+            onChange={(e) => setNoticeSender(e.target.value)}
+            required
+            style={{ width: '100%', padding: '8px' }}
+          />
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>タイトル:</label><br />
+          <input
+            type="text"
+            value={noticeTitle}
+            onChange={(e) => setNoticeTitle(e.target.value)}
+            required
+            style={{ width: '100%', padding: '8px' }}
+          />
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>内容:</label><br />
+          <textarea
+            value={noticeContent}
+            onChange={(e) => setNoticeContent(e.target.value)}
+            required
+            rows={4}
+            style={{ width: '100%', padding: '8px' }}
+          />
+        </div>
+        <button type="submit" style={{ padding: '10px 20px' }}>送信</button>
+      </form>
+
+      {/* --- お知らせ一覧 --- */}
+      <hr style={{ margin: '40px 0' }} />
+      <h2>お知らせ一覧</h2>
+      <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'left' }}>
+        {notices.map((notice) => (
+          <div key={notice.noticeId} style={{ border: '1px solid gray', padding: '10px', marginBottom: '10px' }}>
+            <strong>{notice.title}</strong><br />
+            <em>投稿者: {notice.sender}</em><br />
+            <p>{notice.content}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
